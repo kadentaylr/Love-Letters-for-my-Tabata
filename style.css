@@ -1,0 +1,15 @@
+body{margin:0;background:linear-gradient(#fff7f7,#fdecec);font-family:Georgia,serif;color:#5b3a42}
+#overlay{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.envelope{position:relative;width:280px;height:180px;cursor:pointer;transition:1s}
+.body{position:absolute;bottom:0;width:100%;height:120px;background:#f2b7c6;border-radius:0 0 8px 8px}
+.flap{position:absolute;top:0;border-left:140px solid transparent;border-right:140px solid transparent;border-top:90px solid #e595ad;transform-origin:top;transition:1s}
+.label{position:absolute;width:100%;top:95px;text-align:center;font-family:"Caveat",cursive;font-size:30px}
+.open .flap{transform:rotateX(180deg)}
+.hidden{display:none}
+header{text-align:center;padding:30px}
+nav a{margin:10px;color:#b24d72;text-decoration:none;font-weight:bold}
+.paper{max-width:850px;margin:25px auto;background:#fffef8;padding:30px;border-radius:15px;box-shadow:0 5px 18px rgba(0,0,0,.1)}
+h1,h2,h3{font-family:"Playfair Display",serif}
+.signature{font-family:"Caveat",cursive;font-size:34px}
+.photo{width:100%;border-radius:12px}
+#timer{font-size:2em;text-align:center;font-weight:bold;color:#b24d72}
