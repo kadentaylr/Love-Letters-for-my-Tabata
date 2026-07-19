@@ -28,7 +28,7 @@ function updateCountdown() {
     const seconds = Math.floor(diff / 1000) % 60;
 
     document.getElementById("timer").innerHTML =
-        ${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds;
+        `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`;
 
 }
 
@@ -52,7 +52,7 @@ fetch("letters.json")
         ${
             newest.message
                 .split("\n\n")
-                .map(p => <p>${p}</p>)
+                .map(p => `<p>${p}</p>`)
                 .join("")
         }
 
@@ -83,7 +83,7 @@ fetch("letters.json")
             ${
                 letter.message
                     .split("\n\n")
-                    .map(p => <p>${p}</p>)
+                    .map(p => `<p>${p}</p>`)
                     .join("")
             }
 
