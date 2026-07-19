@@ -52,7 +52,7 @@ fetch("letters.json")
         ${
           newest.message
     .split("\n\n")
-    .map(p => <p>${p.replace(/\n/g, "<br>")}</p>)
+    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
     .join("")
         }
 
