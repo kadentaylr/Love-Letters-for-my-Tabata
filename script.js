@@ -50,10 +50,10 @@ fetch("letters.json")
         <p><em>${newest.date}</em></p>
 
         ${
-            newest.message
-                .split("\n\n")
-                .map(p => `<p>${p}</p>`)
-                .join("")
+          newest.message
+    .split("\n\n")
+    .map(p => <p>${p.replace(/\n/g, "<br>")}</p>)
+    .join("")
         }
 
         <p class="signature">
