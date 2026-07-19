@@ -5,7 +5,7 @@ document.getElementById("overlay").style.display="none";
 document.getElementById("content").classList.remove("hidden");
 },900);
 }
-const target=new Date("2026-12-25T00:00:00");
+const target=new Date("2026-07-28T11:00:00");
 function update(){
 const diff=target-new Date();
 if(diff<0){document.getElementById("timer").textContent="Together ❤️";return;}
