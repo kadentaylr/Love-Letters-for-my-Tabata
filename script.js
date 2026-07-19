@@ -83,7 +83,7 @@ fetch("letters.json")
             ${
                 letter.message
                     .split("\n\n")
-                    .map(p => `<p>${p}</p>`)
+                    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
                     .join("")
             }
 
