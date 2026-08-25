@@ -9,7 +9,7 @@ function openLetter() {
 }
 
 // Countdown
-const target = new Date("2026-07-28T11:00:00");
+const target = new Date("2026-09-01T11:00:00");
 
 function updateCountdown() {
 
