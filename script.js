@@ -34,8 +34,8 @@ setInterval(updateCountdown, 1000);
 updateCountdown();
 
 // Load letters.
-// This normalizes accidental real line breaks inside JSON strings before parsing,
-// so a multiline letter won't break the entire archive.
+// JSON permits whitespace between tokens, so converting ALL real line breaks
+// to spaces safely fixes multiline messages without touching the literal \\n// escape sequences used for paragraph breaks.
 fetch("letters.json")
     .then(response => {
         if (!response.ok) {
@@ -44,30 +44,10 @@ fetch("letters.json")
         return response.text();
     })
     .then(text => {
-        let normalized = "";
-        let insideString = false;
-        let escaped = false;
-
-        for (const char of text) {
-            if (char === '"' && !escaped) {
-                insideString = !insideString;
-                normalized += char;
-                continue;
-            }
-
-            if (insideString && (char === "\n" || char === "\r")) {
-                // A real line break inside a message is treated as a space.
-                // Use \\n\\n in letters.json when you want a paragraph break.
-                if (char === "\n") {
-                    normalized += " ";
-                }
-                continue;
-            }
-
-            normalized += char;
-            escaped = char === "\\" && !escaped;
-        }
-
+        // The letters file contains some accidental real line breaks inside
+        // quoted messages. JSON cannot contain those raw line breaks, but it
+        // is perfectly valid to replace them with spaces before parsing.
+        const normalized = text.replace(/\r?\n/g, " ");
         return JSON.parse(normalized);
     })
     .then(letters => {
