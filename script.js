@@ -12,7 +12,6 @@ function openLetter() {
 const target = new Date("2026-09-01T11:00:00");
 
 function updateCountdown() {
-
     const now = new Date();
     const diff = target - now;
 
@@ -29,70 +28,98 @@ function updateCountdown() {
 
     document.getElementById("timer").innerHTML =
         `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`;
-
 }
 
 setInterval(updateCountdown, 1000);
 updateCountdown();
 
-
-// Load letters
+// Load letters.
+// This normalizes accidental real line breaks inside JSON strings before parsing,
+// so a multiline letter won't break the entire archive.
 fetch("letters.json")
-.then(response => response.json())
-.then(letters => {
-
-    const newest = letters[0];
-
-    document.getElementById("todayLetter").innerHTML = `
-
-        <h3>${newest.title}</h3>
-
-        <p><em>${newest.date}</em></p>
-
-        ${
-          newest.message
-    .split("\n\n")
-    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
-    .join("")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Could not load letters.json (${response.status})`);
         }
+        return response.text();
+    })
+    .then(text => {
+        let normalized = "";
+        let insideString = false;
+        let escaped = false;
 
-        <p class="signature">
-            Love always,<br>
-            Kaden ❤️
-        </p>
-
-    `;
-
-
-    let archive = "";
-
-    letters.slice(1).forEach(letter => {
-
-        archive += `
-
-        <details>
-
-            <summary>
-
-                <strong>${letter.date}</strong>
-
-                — ${letter.title}
-
-            </summary>
-
-            ${
-                letter.message
-                    .split("\n\n")
-                    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
-                    .join("")
+        for (const char of text) {
+            if (char === '"' && !escaped) {
+                insideString = !insideString;
+                normalized += char;
+                continue;
             }
 
-        </details>
+            if (insideString && (char === "\n" || char === "\r")) {
+                // A real line break inside a message is treated as a space.
+                // Use \\n\\n in letters.json when you want a paragraph break.
+                if (char === "\n") {
+                    normalized += " ";
+                }
+                continue;
+            }
 
+            normalized += char;
+            escaped = char === "\\" && !escaped;
+        }
+
+        return JSON.parse(normalized);
+    })
+    .then(letters => {
+        if (!Array.isArray(letters) || letters.length === 0) {
+            throw new Error("letters.json contains no letters.");
+        }
+
+        const newest = letters[0];
+
+        document.getElementById("todayLetter").innerHTML = `
+            <h3>${newest.title}</h3>
+            <p><em>${newest.date}</em></p>
+            ${newest.message
+                .split("\\n\\n")
+                .map(p => `<p>${p.replace(/\\n/g, "<br>")}</p>`)
+                .join("")
+            }
+            <p class="signature">
+                Love always,<br>
+                Kaden ❤️
+            </p>
         `;
 
+        let archive = "";
+
+        letters.slice(1).forEach(letter => {
+            archive += `
+                <details>
+                    <summary>
+                        <strong>${letter.date}</strong>
+                        — ${letter.title}
+                    </summary>
+                    ${letter.message
+                        .split("\\n\\n")
+                        .map(p => `<p>${p.replace(/\\n/g, "<br>")}</p>`)
+                        .join("")
+                    }
+                </details>
+            `;
+        });
+
+        document.getElementById("archiveList").innerHTML = archive;
+    })
+    .catch(error => {
+        console.error("Error loading letters:", error);
+
+        document.getElementById("todayLetter").innerHTML = `
+            <p>I'm sorry, my love — the letter couldn't be loaded. ❤️</p>
+            <p><small>${error.message}</small></p>
+        `;
+
+        document.getElementById("archiveList").innerHTML = `
+            <p>The letter archive couldn't be loaded.</p>
+        `;
     });
-
-    document.getElementById("archiveList").innerHTML = archive;
-
-});
