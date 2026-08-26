@@ -9,9 +9,10 @@ function openLetter() {
 }
 
 // Countdown
-const target = new Date("2026-09-01T11:00:00");
+const target = new Date("2026-07-28T11:00:00");
 
 function updateCountdown() {
+
     const now = new Date();
     const diff = target - now;
 
@@ -28,73 +29,70 @@ function updateCountdown() {
 
     document.getElementById("timer").innerHTML =
         `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`;
+
 }
 
 setInterval(updateCountdown, 1000);
 updateCountdown();
 
-// Load letters.
-// Normalize accidental real line breaks before parsing, while preserving the
-// literal \n\n paragraph markers stored in letters.json.
+
+// Load letters
 fetch("letters.json")
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Could not load letters.json (${response.status})`);
+.then(response => response.json())
+.then(letters => {
+
+    const newest = letters[0];
+
+    document.getElementById("todayLetter").innerHTML = `
+
+        <h3>${newest.title}</h3>
+
+        <p><em>${newest.date}</em></p>
+
+        ${
+          newest.message
+    .split("\n\n")
+    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
+    .join("")
         }
-        return response.text();
-    })
-    .then(text => {
-        const normalized = text.replace(/\r?\n/g, " ");
-        return JSON.parse(normalized);
-    })
-    .then(letters => {
-        if (!Array.isArray(letters) || letters.length === 0) {
-            throw new Error("letters.json contains no letters.");
-        }
 
-        const renderMessage = message =>
-            message
-                .split("\n\n")
-                .map(paragraph => `<p>${paragraph.replace(/\n/g, "<br>")}</p>`)
-                .join("");
+        <p class="signature">
+            Love always,<br>
+            Kaden ❤️
+        </p>
 
-        const newest = letters[0];
+    `;
 
-        document.getElementById("todayLetter").innerHTML = `
-            <h3>${newest.title}</h3>
-            <p><em>${newest.date}</em></p>
-            ${renderMessage(newest.message)}
-            <p class="signature">
-                Love always,<br>
-                Kaden ❤️
-            </p>
+
+    let archive = "";
+
+    letters.slice(1).forEach(letter => {
+
+        archive += `
+
+        <details>
+
+            <summary>
+
+                <strong>${letter.date}</strong>
+
+                — ${letter.title}
+
+            </summary>
+
+            ${
+                letter.message
+                    .split("\n\n")
+                    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
+                    .join("")
+            }
+
+        </details>
+
         `;
 
-        let archive = "";
-
-        letters.slice(1).forEach(letter => {
-            archive += `
-                <details>
-                    <summary>
-                        <strong>${letter.date}</strong>
-                        — ${letter.title}
-                    </summary>
-                    ${renderMessage(letter.message)}
-                </details>
-            `;
-        });
-
-        document.getElementById("archiveList").innerHTML = archive;
-    })
-    .catch(error => {
-        console.error("Error loading letters:", error);
-
-        document.getElementById("todayLetter").innerHTML = `
-            <p>I'm sorry, my love — the letter couldn't be loaded. ❤️</p>
-            <p><small>${error.message}</small></p>
-        `;
-
-        document.getElementById("archiveList").innerHTML = `
-            <p>The letter archive couldn't be loaded.</p>
-        `;
     });
+
+    document.getElementById("archiveList").innerHTML = archive;
+
+});
