@@ -149,7 +149,7 @@ fetch(lettersUrl)
 
         document.getElementById("todayLetter").innerHTML = `
             <p>
-                I'm sorry, my love — the letter couldn't be loaded. ❤️
+                I'm sorry, my love — I fucked up the code. ❤️
             </p>
 
             <p>
