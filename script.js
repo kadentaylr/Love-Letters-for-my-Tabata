@@ -1,4 +1,7 @@
-// Envelope animation
+// ================================
+// ENVELOPE ANIMATION
+// ================================
+
 function openLetter() {
     document.querySelector(".envelope").classList.add("open");
 
@@ -8,11 +11,14 @@ function openLetter() {
     }, 900);
 }
 
-// Countdown
-const target = new Date("2026-07-28T11:00:00");
+
+// ================================
+// COUNTDOWN
+// ================================
+
+const target = new Date("2026-09-01T11:00:00");
 
 function updateCountdown() {
-
     const now = new Date();
     const diff = target - now;
 
@@ -29,70 +35,131 @@ function updateCountdown() {
 
     document.getElementById("timer").innerHTML =
         `${days} Days ${hours} Hours ${minutes} Minutes ${seconds} Seconds`;
-
 }
 
 setInterval(updateCountdown, 1000);
 updateCountdown();
 
 
-// Load letters
-fetch("letters.json")
-.then(response => response.json())
-.then(letters => {
+// ================================
+// LETTER LOADING
+// ================================
 
-    const newest = letters[0];
+// The timestamp prevents the browser/GitHub Pages from using an old
+// cached copy of letters.json.
+const lettersUrl = `letters.json?v=${Date.now()}`;
 
-    document.getElementById("todayLetter").innerHTML = `
-
-        <h3>${newest.title}</h3>
-
-        <p><em>${newest.date}</em></p>
-
-        ${
-          newest.message
-    .split("\n\n")
-    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
-    .join("")
+fetch(lettersUrl)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(
+                `Could not load letters.json (${response.status})`
+            );
         }
 
-        <p class="signature">
-            Love always,<br>
-            Kaden ❤️
-        </p>
+        return response.json();
+    })
 
-    `;
+    .then(letters => {
+
+        if (!Array.isArray(letters) || letters.length === 0) {
+            throw new Error("letters.json contains no letters.");
+        }
 
 
-    let archive = "";
+        // ================================
+        // FORMAT A LETTER
+        // ================================
 
-    letters.slice(1).forEach(letter => {
+        function renderMessage(message) {
 
-        archive += `
+            // \n\n creates a new paragraph.
+            // A single \n creates a line break.
+            return message
+                .split("\n\n")
+                .map(paragraph => {
 
-        <details>
+                    const formattedParagraph =
+                        paragraph.replace(/\n/g, "<br>");
 
-            <summary>
+                    return `<p>${formattedParagraph}</p>`;
 
-                <strong>${letter.date}</strong>
+                })
+                .join("");
+        }
 
-                — ${letter.title}
 
-            </summary>
+        // ================================
+        // TODAY'S LETTER
+        // ================================
 
-            ${
-                letter.message
-                    .split("\n\n")
-                    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
-                    .join("")
-            }
+        const newest = letters[0];
 
-        </details>
+        document.getElementById("todayLetter").innerHTML = `
+            <h3>${newest.title}</h3>
 
+            <p>
+                <em>${newest.date}</em>
+            </p>
+
+            ${renderMessage(newest.message)}
+
+            <p class="signature">
+                Love always,<br>
+                Kaden ❤️
+            </p>
         `;
 
+
+        // ================================
+        // LETTER ARCHIVE
+        // ================================
+
+        let archive = "";
+
+        letters.slice(1).forEach(letter => {
+
+            archive += `
+                <details>
+
+                    <summary>
+                        <strong>${letter.date}</strong>
+                        — ${letter.title}
+                    </summary>
+
+                    ${renderMessage(letter.message)}
+
+                </details>
+            `;
+
+        });
+
+        document.getElementById("archiveList").innerHTML = archive;
+
+    })
+
+
+    // ================================
+    // ERROR HANDLING
+    // ================================
+
+    .catch(error => {
+
+        console.error("Error loading letters:", error);
+
+        document.getElementById("todayLetter").innerHTML = `
+            <p>
+                I'm sorry, my love — the letter couldn't be loaded. ❤️
+            </p>
+
+            <p>
+                <small>${error.message}</small>
+            </p>
+        `;
+
+        document.getElementById("archiveList").innerHTML = `
+            <p>
+                The letter archive couldn't be loaded.
+            </p>
+        `;
     });
-
-    document.getElementById("archiveList").innerHTML = archive;
-
-});
