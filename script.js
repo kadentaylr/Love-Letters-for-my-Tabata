@@ -34,8 +34,8 @@ setInterval(updateCountdown, 1000);
 updateCountdown();
 
 // Load letters.
-// JSON permits whitespace between tokens, so converting ALL real line breaks
-// to spaces safely fixes multiline messages without touching the literal \\n// escape sequences used for paragraph breaks.
+// Normalize accidental real line breaks before parsing, while preserving the
+// literal \n\n paragraph markers stored in letters.json.
 fetch("letters.json")
     .then(response => {
         if (!response.ok) {
@@ -44,9 +44,6 @@ fetch("letters.json")
         return response.text();
     })
     .then(text => {
-        // The letters file contains some accidental real line breaks inside
-        // quoted messages. JSON cannot contain those raw line breaks, but it
-        // is perfectly valid to replace them with spaces before parsing.
         const normalized = text.replace(/\r?\n/g, " ");
         return JSON.parse(normalized);
     })
@@ -55,16 +52,18 @@ fetch("letters.json")
             throw new Error("letters.json contains no letters.");
         }
 
+        const renderMessage = message =>
+            message
+                .split("\n\n")
+                .map(paragraph => `<p>${paragraph.replace(/\n/g, "<br>")}</p>`)
+                .join("");
+
         const newest = letters[0];
 
         document.getElementById("todayLetter").innerHTML = `
             <h3>${newest.title}</h3>
             <p><em>${newest.date}</em></p>
-            ${newest.message
-                .split("\\n\\n")
-                .map(p => `<p>${p.replace(/\\n/g, "<br>")}</p>`)
-                .join("")
-            }
+            ${renderMessage(newest.message)}
             <p class="signature">
                 Love always,<br>
                 Kaden ❤️
@@ -80,11 +79,7 @@ fetch("letters.json")
                         <strong>${letter.date}</strong>
                         — ${letter.title}
                     </summary>
-                    ${letter.message
-                        .split("\\n\\n")
-                        .map(p => `<p>${p.replace(/\\n/g, "<br>")}</p>`)
-                        .join("")
-                    }
+                    ${renderMessage(letter.message)}
                 </details>
             `;
         });
